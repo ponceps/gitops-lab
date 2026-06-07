@@ -7,8 +7,9 @@
 # `{{path}}` / `{{path.basename}}` are ApplicationSet template variables, NOT
 # Helm — the chart passes them through verbatim.
 #
-# NOTE: this repo is private, so Argo CD needs read access (deploy key / repo
-# credential) before the generator can clone it. See the README.
+# NOTE: this repo is public, so Argo CD can clone it without credentials. If you
+# make it private, give Argo CD read access (deploy key / repo credential) first.
+# See the README.
 
 applicationsets:
   apps:

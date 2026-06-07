@@ -67,9 +67,9 @@ the `argocd` namespace, then the `argocd-apps` chart, which creates a bootstrap
 git directory generator emits one Argo CD `Application` per subdirectory of
 [`apps/`](./apps), so anything committed there is reconciled automatically.
 
-> The ApplicationSet pulls from `https://github.com/ponceps/gitops-lab.git`.
-> Since the repo is private, register repo credentials in Argo CD (or make the
-> repo public) so it can clone. See [`values/bootstrap.yaml`](./values/bootstrap.yaml).
+> The ApplicationSet pulls from `https://github.com/ponceps/gitops-lab.git`. The
+> repo is public, so Argo CD can clone it without credentials. If you make it
+> private, register repo credentials in Argo CD. See [`values/bootstrap.yaml`](./values/bootstrap.yaml).
 
 #### Access the UI
 
