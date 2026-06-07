@@ -1,4 +1,0 @@
-# Overridden by values/bootstrap.yaml via helmfile.
-repoURL: ""
-targetRevision: HEAD
-path: apps

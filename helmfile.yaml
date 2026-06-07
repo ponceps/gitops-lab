@@ -1,4 +1,4 @@
-# Declarative install of Argo CD + the app-of-apps bootstrap.
+# Declarative install of Argo CD + the bootstrap ApplicationSet.
 #
 #   helmfile apply        # install / reconcile everything
 #   helmfile destroy      # remove everything
@@ -24,11 +24,15 @@ releases:
     values:
       - ./values/argo-cd.yaml
 
-  # 2. Root "app-of-apps" Application. Installed after Argo CD is up so the
-  #    CRDs (Application) exist. From here on, Argo CD self-manages from Git.
-  - name: argocd-bootstrap
+  # 2. Bootstrap ApplicationSet (officially recommended over app-of-apps).
+  #    The git directory generator emits one Application per apps/* directory.
+  #    Installed after Argo CD so the ApplicationSet CRD exists.
+  - name: argocd-apps
     namespace: argocd
-    chart: ./charts/argocd-bootstrap
+    chart: argo/argocd-apps
+    # Pinned for reproducibility. Find newer with:
+    #   helm search repo argo/argocd-apps --versions
+    version: 2.0.5
     needs:
       - argocd/argocd
     values:

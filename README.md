@@ -62,13 +62,14 @@ helmfile apply
 ```
 
 This installs the `argo-cd` chart (pinned to chart 9.5.19 / Argo CD v3.4.3) into
-the `argocd` namespace, then applies the **root app-of-apps** `Application`. From
-that point Argo CD self-manages from Git: anything committed under [`apps/`](./apps)
-is reconciled into the cluster automatically.
+the `argocd` namespace, then the `argocd-apps` chart, which creates a bootstrap
+**ApplicationSet** (the officially recommended alternative to app-of-apps). Its
+git directory generator emits one Argo CD `Application` per subdirectory of
+[`apps/`](./apps), so anything committed there is reconciled automatically.
 
-> The root app pulls from `https://github.com/ponceps/gitops-lab.git`. Since the
-> repo is private, register repo credentials in Argo CD (or make the repo public)
-> so it can clone. See [`values/bootstrap.yaml`](./values/bootstrap.yaml).
+> The ApplicationSet pulls from `https://github.com/ponceps/gitops-lab.git`.
+> Since the repo is private, register repo credentials in Argo CD (or make the
+> repo public) so it can clone. See [`values/bootstrap.yaml`](./values/bootstrap.yaml).
 
 #### Access the UI
 
@@ -92,8 +93,9 @@ is reconciled into the cluster automatically.
 > [getting-started guide](https://argo-cd.readthedocs.io/en/stable/getting_started/#4-login-using-the-cli)
 > recommends.
 
-To add a workload, drop an Argo CD `Application` under `apps/` and commit it —
-see [`apps/README.md`](./apps/README.md).
+To add a workload, drop a directory of manifests under `apps/` and commit it —
+the ApplicationSet generates the Application for you. See
+[`apps/README.md`](./apps/README.md).
 
 ### Tear down
 
@@ -108,8 +110,8 @@ kind delete cluster --name gitops-lab
   Uncomment the `worker` node to run a multi-node cluster.
 - [`create-cluster.sh`](./create-cluster.sh) — wrapper that creates the cluster from
   the config above.
-- [`helmfile.yaml`](./helmfile.yaml) — declarative Argo CD install + bootstrap releases.
-- [`values/`](./values) — Helm values for the `argo-cd` chart and the bootstrap root app.
-- [`charts/argocd-bootstrap/`](./charts/argocd-bootstrap) — local chart holding the
-  root app-of-apps `Application`.
+- [`helmfile.yaml`](./helmfile.yaml) — declarative Argo CD install + bootstrap releases
+  (`argo-cd` and `argocd-apps`).
+- [`values/`](./values) — Helm values for the `argo-cd` chart and the bootstrap
+  ApplicationSet (`argocd-apps`).
 - [`apps/`](./apps) — GitOps target dir; child `Application` manifests live here.
