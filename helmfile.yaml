@@ -12,8 +12,9 @@ repositories:
     url: https://argoproj.github.io/argo-helm
 
 releases:
-  # 1. Argo CD itself.
-  - name: argo-cd
+  # 1. Argo CD itself. Release name 'argocd' keeps resource names clean
+  #    (argocd-server, argocd-repo-server, ...) instead of argo-cd-argocd-*.
+  - name: argocd
     namespace: argocd
     createNamespace: true
     chart: argo/argo-cd
@@ -29,6 +30,6 @@ releases:
     namespace: argocd
     chart: ./charts/argocd-bootstrap
     needs:
-      - argocd/argo-cd
+      - argocd/argocd
     values:
       - ./values/bootstrap.yaml
