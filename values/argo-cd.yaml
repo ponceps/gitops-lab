@@ -1,0 +1,21 @@
+# Argo CD values tuned for a local kind cluster.
+# See https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd for the full set.
+
+configs:
+  params:
+    # Serve the API/UI over plain HTTP so `kubectl port-forward` works without
+    # TLS juggling. Fine for a local lab; do NOT do this in a real cluster.
+    server.insecure: true
+
+# Single replica of everything — this is a one-node lab, not HA.
+controller:
+  replicas: 1
+
+server:
+  replicas: 1
+
+repoServer:
+  replicas: 1
+
+applicationSet:
+  replicas: 1

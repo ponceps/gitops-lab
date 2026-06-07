@@ -10,10 +10,14 @@ A local lab for experimenting with GitOps workflows on a [kind](https://kind.sig
 
 Tool versions are pinned in [`mise.toml`](./mise.toml):
 
-| Tool    | Version |
-| ------- | ------- |
-| kind    | 0.32.0  |
-| kubectl | 1.36.1  |
+| Tool     | Version | Purpose                            |
+| -------- | ------- | ---------------------------------- |
+| kind     | 0.32.0  | Local Kubernetes cluster           |
+| kubectl  | 1.36.1  | Kubernetes CLI                     |
+| helm     | 3.16.3  | Chart templating / releases        |
+| helmfile | 0.169.1 | Declarative Argo CD install        |
+| kubectx  | 0.11.0  | Switch between kube contexts       |
+| kubens   | 0.11.0  | Switch between namespaces          |
 
 Install them with:
 
@@ -47,9 +51,40 @@ kubectl cluster-info --context kind-gitops-lab
 kubectl get nodes
 ```
 
+### Install Argo CD (IaC)
+
+Argo CD is installed declaratively with [Helmfile](https://helmfile.readthedocs.io/).
+The first install needs the helm-diff plugin (or use `helmfile sync` instead):
+
+```bash
+helm plugin install https://github.com/databus23/helm-diff   # once
+helmfile apply
+```
+
+This installs the `argo-cd` chart (pinned to chart 9.5.19 / Argo CD v3.4.3) into
+the `argocd` namespace, then applies the **root app-of-apps** `Application`. From
+that point Argo CD self-manages from Git: anything committed under [`apps/`](./apps)
+is reconciled into the cluster automatically.
+
+> The root app pulls from `https://github.com/ponceps/gitops-lab.git`. Since the
+> repo is private, register repo credentials in Argo CD (or make the repo public)
+> so it can clone. See [`values/bootstrap.yaml`](./values/bootstrap.yaml).
+
+Access the UI and grab the initial admin password:
+
+```bash
+kubectl -n argocd port-forward svc/argocd-server 8080:80   # then open http://localhost:8080
+kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath='{.data.password}' | base64 -d; echo
+```
+
+To add a workload, drop an Argo CD `Application` under `apps/` and commit it —
+see [`apps/README.md`](./apps/README.md).
+
 ### Tear down
 
 ```bash
+helmfile destroy             # remove Argo CD + bootstrap
 kind delete cluster --name gitops-lab
 ```
 
@@ -59,3 +94,8 @@ kind delete cluster --name gitops-lab
   Uncomment the `worker` node to run a multi-node cluster.
 - [`create-cluster.sh`](./create-cluster.sh) — wrapper that creates the cluster from
   the config above.
+- [`helmfile.yaml`](./helmfile.yaml) — declarative Argo CD install + bootstrap releases.
+- [`values/`](./values) — Helm values for the `argo-cd` chart and the bootstrap root app.
+- [`charts/argocd-bootstrap/`](./charts/argocd-bootstrap) — local chart holding the
+  root app-of-apps `Application`.
+- [`apps/`](./apps) — GitOps target dir; child `Application` manifests live here.
