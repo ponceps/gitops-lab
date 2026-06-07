@@ -1,9 +1,8 @@
 # Where the root app-of-apps pulls child Applications from.
 #
-# This repo is private, so Argo CD needs read access to clone it. Either:
-#   - make the repo public, or
-#   - register repo credentials in Argo CD (Settings > Repositories, or a
-#     `repo-*` secret), then keep the SSH/HTTPS URL below in sync.
+# This repo is public, so Argo CD can clone it without credentials. If you make
+# it private, register repo credentials in Argo CD (Settings > Repositories, or
+# a `repo-*` secret) and keep the SSH/HTTPS URL below in sync.
 repoURL: https://github.com/ponceps/gitops-lab.git
 targetRevision: HEAD
 # Directory in the repo holding child Application manifests.

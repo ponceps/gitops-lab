@@ -64,9 +64,9 @@ the `argocd` namespace, then applies the **root app-of-apps** `Application`. Fro
 that point Argo CD self-manages from Git: anything committed under [`apps/`](./apps)
 is reconciled into the cluster automatically.
 
-> The root app pulls from `https://github.com/ponceps/gitops-lab.git`. Since the
-> repo is private, register repo credentials in Argo CD (or make the repo public)
-> so it can clone. See [`values/bootstrap.yaml`](./values/bootstrap.yaml).
+> The root app pulls from `https://github.com/ponceps/gitops-lab.git`. The repo
+> is public, so Argo CD can clone it without credentials. If you make it private,
+> register repo credentials in Argo CD. See [`values/bootstrap.yaml`](./values/bootstrap.yaml).
 
 #### Access the UI
 
