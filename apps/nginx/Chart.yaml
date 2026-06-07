@@ -1,0 +1,10 @@
+apiVersion: v2
+name: nginx
+description: nginx web server via the bitnami/nginx chart, deployed by Argo CD.
+type: application
+version: 0.1.0
+appVersion: "1.29.0"
+dependencies:
+  - name: nginx
+    version: 25.0.2
+    repository: https://charts.bitnami.com/bitnami

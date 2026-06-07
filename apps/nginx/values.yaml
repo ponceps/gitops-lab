@@ -1,0 +1,28 @@
+# `global` is a Helm-reserved key shared with all subcharts — keep it top-level.
+# Bitnami charts reject non-official images unless this is set.
+global:
+  security:
+    allowInsecureImages: true
+
+# Overrides for the bitnami/nginx subchart (key == dependency name).
+nginx:
+  image:
+    # Bitnami's 2025 catalog migration moved pinned tags to the (deprecated)
+    # bitnamilegacy repo; the live bitnami/nginx repo only publishes :latest.
+    # We pin to a legacy tag to stay reproducible.
+    registry: docker.io
+    repository: bitnamilegacy/nginx
+    tag: 1.29.0
+
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    ports:
+      http: 80
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
