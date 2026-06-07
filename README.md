@@ -70,13 +70,27 @@ is reconciled into the cluster automatically.
 > repo is private, register repo credentials in Argo CD (or make the repo public)
 > so it can clone. See [`values/bootstrap.yaml`](./values/bootstrap.yaml).
 
-Access the UI and grab the initial admin password:
+#### Access the UI
 
-```bash
-kubectl -n argocd port-forward svc/argocd-server 8080:80   # then open http://localhost:8080
-kubectl -n argocd get secret argocd-initial-admin-secret \
-  -o jsonpath='{.data.password}' | base64 -d; echo
-```
+1. Port-forward the Argo CD server:
+
+   ```bash
+   kubectl -n argocd port-forward svc/argocd-server 8080:80   # then open http://localhost:8080
+   ```
+
+2. Get the initial admin password:
+
+   ```bash
+   kubectl -n argocd get secret argocd-initial-admin-secret \
+     -o jsonpath='{.data.password}' | base64 -d; echo
+   ```
+
+3. Log in as user `admin` with that password.
+
+> The `argocd-initial-admin-secret` is for bootstrap only. After first login,
+> change the admin password and delete the secret, as the
+> [getting-started guide](https://argo-cd.readthedocs.io/en/stable/getting_started/#4-login-using-the-cli)
+> recommends.
 
 To add a workload, drop an Argo CD `Application` under `apps/` and commit it —
 see [`apps/README.md`](./apps/README.md).
