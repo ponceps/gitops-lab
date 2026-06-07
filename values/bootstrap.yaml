@@ -1,9 +1,40 @@
-# Where the root app-of-apps pulls child Applications from.
+# Bootstrap: one ApplicationSet that auto-discovers apps under apps/*.
 #
-# This repo is public, so Argo CD can clone it without credentials. If you make
-# it private, register repo credentials in Argo CD (Settings > Repositories, or
-# a `repo-*` secret) and keep the SSH/HTTPS URL below in sync.
-repoURL: https://github.com/ponceps/gitops-lab.git
-targetRevision: HEAD
-# Directory in the repo holding child Application manifests.
-path: apps
+# The git directory generator scans the repo and emits one Argo CD Application
+# per subdirectory of apps/. Each app deploys whatever manifests/Helm/kustomize
+# live in its directory, into a namespace named after that directory.
+#
+# `{{path}}` / `{{path.basename}}` are ApplicationSet template variables, NOT
+# Helm — the chart passes them through verbatim.
+#
+# NOTE: this repo is public, so Argo CD can clone it without credentials. If you
+# make it private, give Argo CD read access (deploy key / repo credential) first.
+# See the README.
+
+applicationsets:
+  apps:
+    namespace: argocd
+    generators:
+      - git:
+          repoURL: https://github.com/ponceps/gitops-lab.git
+          revision: HEAD
+          directories:
+            - path: apps/*
+    template:
+      metadata:
+        name: "{{path.basename}}"
+      spec:
+        project: default
+        source:
+          repoURL: https://github.com/ponceps/gitops-lab.git
+          targetRevision: HEAD
+          path: "{{path}}"
+        destination:
+          server: https://kubernetes.default.svc
+          namespace: "{{path.basename}}"
+        syncPolicy:
+          automated:
+            prune: true
+            selfHeal: true
+          syncOptions:
+            - CreateNamespace=true
