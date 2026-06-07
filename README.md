@@ -16,8 +16,6 @@ Tool versions are pinned in [`mise.toml`](./mise.toml):
 | kubectl  | 1.36.1  | Kubernetes CLI                     |
 | helm     | 3.16.3  | Chart templating / releases        |
 | helmfile | 0.169.1 | Declarative Argo CD install        |
-| kubectx  | 0.11.0  | Switch between kube contexts       |
-| kubens   | 0.11.0  | Switch between namespaces          |
 
 Install them with:
 
