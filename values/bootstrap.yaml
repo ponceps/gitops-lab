@@ -1,11 +1,14 @@
-# Bootstrap: one ApplicationSet that auto-discovers apps under apps/*.
+# Bootstrap: one ApplicationSet that auto-discovers per-environment app overlays.
 #
-# The git directory generator scans the repo and emits one Argo CD Application
-# per subdirectory of apps/. Each app deploys whatever manifests/Helm/kustomize
-# live in its directory, into a namespace named after that directory.
+# The git directory generator scans apps/*/overlays/* and emits one Argo CD
+# Application per (app, environment) pair. For apps/nginx/overlays/dev it
+# generates Application "nginx-dev" deploying into the "dev" namespace; the
+# overlay's directory (a kustomize overlay) is the source.
 #
-# `{{path}}` / `{{path.basename}}` are ApplicationSet template variables, NOT
-# Helm — the chart passes them through verbatim.
+# Path variables (fasttemplate, NOT Helm — the chart passes them through):
+#   {{path}}          -> apps/nginx/overlays/dev   (source path)
+#   {{path[1]}}       -> nginx                      (app name segment)
+#   {{path.basename}} -> dev                        (environment / namespace)
 #
 # NOTE: this repo is public, so Argo CD can clone it without credentials. If you
 # make it private, give Argo CD read access (deploy key / repo credential) first.
@@ -19,10 +22,10 @@ applicationsets:
           repoURL: https://github.com/ponceps/gitops-lab.git
           revision: HEAD
           directories:
-            - path: apps/*
+            - path: apps/*/overlays/*
     template:
       metadata:
-        name: "{{path.basename}}"
+        name: "{{path[1]}}-{{path.basename}}"
       spec:
         project: default
         source:
