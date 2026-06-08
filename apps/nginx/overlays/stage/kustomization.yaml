@@ -3,8 +3,8 @@ kind: Kustomization
 # stage environment
 namespace: stage
 resources:
-  - ../../base
+- ../../base
 # Kargo promotion updates newTag here as Freight flows into this stage.
 images:
-  - name: public.ecr.aws/nginx/nginx
-    newTag: 1.27.3
+- name: public.ecr.aws/nginx/nginx
+  newTag: 1.31.1
