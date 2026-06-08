@@ -1,48 +1,42 @@
 # apps/
 
-A bootstrap **ApplicationSet** (git directory generator) watches this directory.
-Every **subdirectory** of `apps/` becomes one Argo CD `Application` automatically:
+A bootstrap **ApplicationSet** (git directory generator) watches
+`apps/*/overlays/*`. Every per-environment overlay becomes one Argo CD
+`Application`:
 
-- the Application is named after the directory (`apps/podinfo` → app `podinfo`),
-- its source path is that directory,
-- it deploys into a namespace of the same name (auto-created).
+| Directory                   | Application   | Namespace |
+| --------------------------- | ------------- | --------- |
+| `apps/nginx/overlays/dev`   | `nginx-dev`   | `dev`     |
+| `apps/nginx/overlays/stage` | `nginx-stage` | `stage`   |
+| `apps/nginx/overlays/prod`  | `nginx-prod`  | `prod`    |
 
-So you don't write `Application` manifests here — you drop a **directory of
-workload manifests** (plain YAML, a Helm chart, or a kustomization) and commit
-it. Argo CD generates and syncs the Application for you.
-
-> Argo CD only treats subdirectories as apps, so this `README.md` is ignored.
-
-## Example
+So each app is a **Kustomize** project with a shared `base/` and one overlay per
+environment (`dev` / `stage` / `prod` are simulated as namespaces in the single
+cluster):
 
 ```
 apps/
-└── podinfo/
-    └── deployment.yaml      # plain manifests, Chart.yaml, or kustomization.yaml
+└── nginx/
+    ├── base/                 # deployment + service, shared across envs
+    │   ├── kustomization.yaml
+    │   ├── deployment.yaml
+    │   └── service.yaml
+    └── overlays/
+        ├── dev/kustomization.yaml      # namespace: dev,   images[].newTag
+        ├── stage/kustomization.yaml    # namespace: stage, images[].newTag
+        └── prod/kustomization.yaml     # namespace: prod,  images[].newTag
 ```
 
-`apps/podinfo/deployment.yaml`:
+## Adding an app
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: podinfo
-spec:
-  replicas: 1
-  selector:
-    matchLabels: { app: podinfo }
-  template:
-    metadata:
-      labels: { app: podinfo }
-    spec:
-      containers:
-        - name: podinfo
-          image: ghcr.io/stefanprodan/podinfo:6.7.0
-          ports:
-            - containerPort: 9898
-```
+Create `apps/<app>/base` and `apps/<app>/overlays/{dev,stage,prod}`, then commit.
+The ApplicationSet generates `<app>-dev` / `<app>-stage` / `<app>-prod`
+automatically.
 
-Commit that and Argo CD creates a `podinfo` Application in the `podinfo`
-namespace. The generator/template is defined in
-[`values/bootstrap.yaml`](../values/bootstrap.yaml).
+## Promotion (Kargo, later)
+
+Each overlay pins the image via Kustomize `images[].newTag`. That's the field
+[Kargo](https://docs.kargo.io/) updates when promoting Freight through the
+`dev → stage → prod` stages: it commits a new tag to the next environment's
+overlay and Argo CD syncs it. Keeping per-env config in distinct directories
+(not branches) is what makes that promotion flow work.
