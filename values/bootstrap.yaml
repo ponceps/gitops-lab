@@ -27,7 +27,9 @@ applicationsets:
       metadata:
         name: "{{path[1]}}-{{path.basename}}"
       spec:
-        project: default
+        # Each app lands in its environment's AppProject (dev/stage/prod),
+        # defined below — gives per-env guardrails (allowed repo/destinations).
+        project: "{{path.basename}}"
         source:
           repoURL: https://github.com/ponceps/gitops-lab.git
           targetRevision: HEAD
@@ -41,3 +43,35 @@ applicationsets:
             selfHeal: true
           syncOptions:
             - CreateNamespace=true
+
+# One AppProject per environment. Each only trusts this repo as a source and
+# may only deploy into its own namespace — so a dev app can't accidentally
+# target prod. Namespace is whitelisted as a cluster resource to allow
+# CreateNamespace=true on a fresh cluster; all namespaced kinds are allowed.
+projects:
+  dev: &envProject
+    namespace: argocd
+    description: dev environment
+    sourceRepos:
+      - https://github.com/ponceps/gitops-lab.git
+    destinations:
+      - server: https://kubernetes.default.svc
+        namespace: dev
+    clusterResourceWhitelist:
+      - group: ""
+        kind: Namespace
+    namespaceResourceWhitelist:
+      - group: "*"
+        kind: "*"
+  stage:
+    <<: *envProject
+    description: stage environment
+    destinations:
+      - server: https://kubernetes.default.svc
+        namespace: stage
+  prod:
+    <<: *envProject
+    description: prod environment
+    destinations:
+      - server: https://kubernetes.default.svc
+        namespace: prod
