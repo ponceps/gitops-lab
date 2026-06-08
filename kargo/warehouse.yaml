@@ -8,7 +8,7 @@ metadata:
 spec:
   subscriptions:
     - image:
-        repoURL: docker.io/library/nginx
+        repoURL: public.ecr.aws/nginx/nginx
         # >=1.27.0 <2.0.0 — picks the latest 1.x semver tag (ignores -alpine
         # prereleases). Starting overlays at 1.27.3 means there's a newer tag
         # to promote.

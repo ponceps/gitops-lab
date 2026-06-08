@@ -14,7 +14,7 @@ Freight's tag, commits to `main`, and tells Argo CD to sync `nginx-<stage>`.
 | File | Resource |
 | --- | --- |
 | `project.yaml` | Kargo `Project` (owns the `nginx` namespace) |
-| `warehouse.yaml` | `Warehouse` watching `docker.io/library/nginx` |
+| `warehouse.yaml` | `Warehouse` watching `public.ecr.aws/nginx/nginx` |
 | `promotion-task.yaml` | `PromotionTask promote` (git-clone → set-image → commit → push → argocd-update) |
 | `stages.yaml` | `Stage`s dev/stage/prod |
 
