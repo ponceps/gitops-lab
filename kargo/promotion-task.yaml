@@ -1,0 +1,47 @@
+# Reusable promotion process, shared by all three Stages. For the stage being
+# promoted (ctx.stage = dev|stage|prod) it:
+#   1. clones main,
+#   2. rewrites images[].newTag in that env's overlay to the Freight's tag,
+#   3. commits + pushes directly to main, and
+#   4. tells Argo CD to sync the matching Application at that commit.
+apiVersion: kargo.akuity.io/v1alpha1
+kind: PromotionTask
+metadata:
+  name: promote
+  namespace: nginx
+spec:
+  vars:
+    - name: gitopsRepo
+      value: https://github.com/ponceps/gitops-lab.git
+    - name: imageRepo
+      value: docker.io/library/nginx
+  steps:
+    - uses: git-clone
+      config:
+        repoURL: ${{ vars.gitopsRepo }}
+        checkout:
+          - branch: main
+            path: ./repo
+    - uses: kustomize-set-image
+      as: update
+      config:
+        path: ./repo/apps/nginx/overlays/${{ ctx.stage }}
+        images:
+          - image: nginx
+            tag: ${{ imageFrom(vars.imageRepo).Tag }}
+    - uses: git-commit
+      as: commit
+      config:
+        path: ./repo
+        message: ${{ task.outputs.update.commitMessage }}
+    - uses: git-push
+      config:
+        path: ./repo
+    - uses: argocd-update
+      config:
+        apps:
+          - name: nginx-${{ ctx.stage }}
+            namespace: argocd
+            sources:
+              - repoURL: ${{ vars.gitopsRepo }}
+                desiredRevision: ${{ task.outputs.commit.commit }}

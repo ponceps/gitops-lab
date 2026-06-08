@@ -1,0 +1,7 @@
+# Kargo Project — creates/owns the `nginx` namespace that holds the Kargo
+# resources below (Warehouse, Stages, PromotionTask) and the git credential.
+# NOTE: a Kargo Project is NOT an Argo CD AppProject — unrelated concepts.
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Project
+metadata:
+  name: nginx

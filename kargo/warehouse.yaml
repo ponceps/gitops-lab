@@ -1,0 +1,16 @@
+# Watches the nginx image and produces Freight when a new tag appears.
+# No external webhooks on a laptop/kind, so Kargo polls on an interval.
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: nginx
+  namespace: nginx
+spec:
+  subscriptions:
+    - image:
+        repoURL: docker.io/library/nginx
+        # >=1.27.0 <2.0.0 — picks the latest 1.x semver tag (ignores -alpine
+        # prereleases). Starting overlays at 1.27.3 means there's a newer tag
+        # to promote.
+        constraint: ^1.27.0
+        discoveryLimit: 10
