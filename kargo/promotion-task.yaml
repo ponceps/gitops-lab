@@ -14,7 +14,7 @@ spec:
     - name: gitopsRepo
       value: https://github.com/ponceps/gitops-lab.git
     - name: imageRepo
-      value: docker.io/library/nginx
+      value: public.ecr.aws/nginx/nginx
   steps:
     - uses: git-clone
       config:
@@ -27,7 +27,7 @@ spec:
       config:
         path: ./repo/apps/nginx/overlays/${{ ctx.stage }}
         images:
-          - image: nginx
+          - image: public.ecr.aws/nginx/nginx
             tag: ${{ imageFrom(vars.imageRepo).Tag }}
     - uses: git-commit
       as: commit

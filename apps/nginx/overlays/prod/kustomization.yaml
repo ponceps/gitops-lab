@@ -6,5 +6,5 @@ resources:
   - ../../base
 # Kargo promotion updates newTag here as Freight flows into this stage.
 images:
-  - name: nginx
+  - name: public.ecr.aws/nginx/nginx
     newTag: 1.27.3
