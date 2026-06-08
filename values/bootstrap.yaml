@@ -26,6 +26,11 @@ applicationsets:
     template:
       metadata:
         name: "{{path[1]}}-{{path.basename}}"
+        # Authorize the matching Kargo Stage (project "nginx", stage = env) to
+        # run its argocd-update step against this Application. Without this,
+        # Kargo's promotion fails with "Application ... is not authorized".
+        annotations:
+          kargo.akuity.io/authorized-stage: "nginx:{{path.basename}}"
       spec:
         # Each app lands in its environment's AppProject (dev/stage/prod),
         # defined below — gives per-env guardrails (allowed repo/destinations).

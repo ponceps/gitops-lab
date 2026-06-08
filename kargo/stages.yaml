@@ -1,6 +1,11 @@
 # The promotion pipeline: dev -> stage -> prod.
 # dev pulls Freight straight from the Warehouse; stage and prod can only
 # receive Freight that already reached the upstream stage.
+#
+# Each Stage runs the same inline promotion steps (parameterized by ctx.stage):
+# clone main, rewrite the env overlay's image tag to the Freight's tag, commit
+# + push to main, then sync the matching Argo CD Application at that commit.
+# (Steps are duplicated per Stage because YAML anchors don't cross documents.)
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
 metadata:
@@ -16,8 +21,35 @@ spec:
   promotionTemplate:
     spec:
       steps:
-        - task:
-            name: promote
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/ponceps/gitops-lab.git
+            checkout:
+              - branch: main
+                path: ./repo
+        - uses: kustomize-set-image
+          as: update
+          config:
+            path: ./repo/apps/nginx/overlays/${{ ctx.stage }}
+            images:
+              - image: public.ecr.aws/nginx/nginx
+                tag: ${{ imageFrom("public.ecr.aws/nginx/nginx").Tag }}
+        - uses: git-commit
+          as: commit
+          config:
+            path: ./repo
+            message: 'promote ${{ ctx.stage }} to nginx ${{ imageFrom("public.ecr.aws/nginx/nginx").Tag }}'
+        - uses: git-push
+          config:
+            path: ./repo
+        - uses: argocd-update
+          config:
+            apps:
+              - name: nginx-${{ ctx.stage }}
+                namespace: argocd
+                sources:
+                  - repoURL: https://github.com/ponceps/gitops-lab.git
+                    desiredRevision: ${{ outputs.commit.commit }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -35,8 +67,35 @@ spec:
   promotionTemplate:
     spec:
       steps:
-        - task:
-            name: promote
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/ponceps/gitops-lab.git
+            checkout:
+              - branch: main
+                path: ./repo
+        - uses: kustomize-set-image
+          as: update
+          config:
+            path: ./repo/apps/nginx/overlays/${{ ctx.stage }}
+            images:
+              - image: public.ecr.aws/nginx/nginx
+                tag: ${{ imageFrom("public.ecr.aws/nginx/nginx").Tag }}
+        - uses: git-commit
+          as: commit
+          config:
+            path: ./repo
+            message: 'promote ${{ ctx.stage }} to nginx ${{ imageFrom("public.ecr.aws/nginx/nginx").Tag }}'
+        - uses: git-push
+          config:
+            path: ./repo
+        - uses: argocd-update
+          config:
+            apps:
+              - name: nginx-${{ ctx.stage }}
+                namespace: argocd
+                sources:
+                  - repoURL: https://github.com/ponceps/gitops-lab.git
+                    desiredRevision: ${{ outputs.commit.commit }}
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -54,5 +113,32 @@ spec:
   promotionTemplate:
     spec:
       steps:
-        - task:
-            name: promote
+        - uses: git-clone
+          config:
+            repoURL: https://github.com/ponceps/gitops-lab.git
+            checkout:
+              - branch: main
+                path: ./repo
+        - uses: kustomize-set-image
+          as: update
+          config:
+            path: ./repo/apps/nginx/overlays/${{ ctx.stage }}
+            images:
+              - image: public.ecr.aws/nginx/nginx
+                tag: ${{ imageFrom("public.ecr.aws/nginx/nginx").Tag }}
+        - uses: git-commit
+          as: commit
+          config:
+            path: ./repo
+            message: 'promote ${{ ctx.stage }} to nginx ${{ imageFrom("public.ecr.aws/nginx/nginx").Tag }}'
+        - uses: git-push
+          config:
+            path: ./repo
+        - uses: argocd-update
+          config:
+            apps:
+              - name: nginx-${{ ctx.stage }}
+                namespace: argocd
+                sources:
+                  - repoURL: https://github.com/ponceps/gitops-lab.git
+                    desiredRevision: ${{ outputs.commit.commit }}
