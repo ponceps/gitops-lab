@@ -33,10 +33,9 @@ Create `apps/<app>/base` and `apps/<app>/overlays/{dev,stage,prod}`, then commit
 The ApplicationSet generates `<app>-dev` / `<app>-stage` / `<app>-prod`
 automatically.
 
-## Promotion (Kargo, later)
+## Promotion
 
-Each overlay pins the image via Kustomize `images[].newTag`. That's the field
-[Kargo](https://docs.kargo.io/) updates when promoting Freight through the
-`dev → stage → prod` stages: it commits a new tag to the next environment's
-overlay and Argo CD syncs it. Keeping per-env config in distinct directories
-(not branches) is what makes that promotion flow work.
+Each overlay pins the image via Kustomize `images[].newTag`. Promoting a new
+version means bumping that tag in the next environment's overlay and letting
+Argo CD sync it. Keeping per-env config in distinct directories (not branches)
+is what makes that flow straightforward.
